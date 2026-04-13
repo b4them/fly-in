@@ -1,6 +1,7 @@
-from .types import Zone, Connection
-from typing import Optional
 import re
+from typing import Optional
+
+from .types import Connection, Zone
 
 
 class MapConfig:
@@ -68,6 +69,9 @@ class MapConfig:
                 pass
             self.end_hub = new_zone
 
+        self.zones[name] = new_zone
+        self.graph[name] = []
+
     def _parse_connection(self, data: str) -> None:
         clean_data, metadata = self._extract_metadata(data)
 
@@ -114,7 +118,7 @@ class MapConfig:
 
         if key == "nb_drones":
             self._parse_drone_count(value)
-        elif key in ("start_hub" "end_hub", "hub"):
+        elif key in ("start_hub", "end_hub", "hub"):
             self._parse_zone(key, value)
         elif key == "connection":
             self._parse_connection(value)

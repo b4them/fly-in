@@ -27,19 +27,19 @@ class Path:
         self.total_turns: int = 0
 
     def add_movement(self, turn: int, target: Union[Zone, Connection]) -> None:
-        name = target.name if hasattr(
-            target, 'name') else f"{target.zone_a.name}-{target.zone_b.name}"
-        self._schedule[turn] = f"{self.drone_name}-{name}"
+        if isinstance(target, Zone):
+            name = target.name
+        else:
+            name = f"{target.zone_a.name}-{target.zone_b.name}"
 
-        if turn > self.total_turns:
-            self.total_turns = turn
+        self._schedule[turn] = f"{self.drone_name}-{name}"
 
     def get_output(self, turn: int) -> Optional[str]:
         return self._schedule.get(turn)
 
     def is_finished(self, turn: int) -> bool:
         for t, move_str in self._schedule.items():
-            if t < turn and move_str.endswith(f"-{self.end_zone}"):
+            if t < turn and move_str.endswith(f"-{self.end_name}"):
                 return True
         return False
 
