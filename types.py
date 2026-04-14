@@ -33,6 +33,7 @@ class Path:
             name = f"{target.zone_a.name}-{target.zone_b.name}"
 
         self._schedule[turn] = f"{self.drone_name}-{name}"
+        self.total_turns = max(self.total_turns, turn)
 
     def get_output(self, turn: int) -> Optional[str]:
         return self._schedule.get(turn)
@@ -52,6 +53,12 @@ class Drone:
 
     def set_path(self, path: Path) -> None:
         self.path = path
+
+    def is_delivered(self, turn: int) -> bool:
+        if not self.path:
+            return False
+
+        return self.path.is_finished(turn + 1)
 
     def get_log(self, turn: int) -> Optional[str]:
         if not self.path or self.path.is_finished(turn):
