@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 
-from .types import Connection, Zone
+from models import Connection, Zone
 
 
 class ReservationTable:

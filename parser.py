@@ -1,7 +1,7 @@
 import re
 from typing import Optional
 
-from .types import Connection, Zone
+from models import Connection, Zone
 
 
 class MapConfig:

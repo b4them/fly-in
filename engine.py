@@ -1,8 +1,10 @@
+import time
+from parser import MapConfig
 from typing import List
-from .parser import MapConfig
-from .types import Drone
-from .traffic import ReservationTable
-from .visualizer import Visualizer
+
+from models import Drone
+from traffic import ReservationTable
+from visualizer import Visualizer
 
 
 class SimulationEngine:
@@ -13,15 +15,17 @@ class SimulationEngine:
         self.drones: List[Drone] = []
 
     def run(self, visualizer: Visualizer) -> None:
+        visualizer.draw_map()
+
         while not self._all_drones_delivered():
             self.current_turn += 1
-
             turn_movements = self._execute_turn()
 
             if turn_movements:
                 self._display_output(turn_movements)
+                visualizer.render_turn(turn_movements)
 
-            self._render_visuals()
+            time.sleep(0.9)
 
     def _execute_turn(self) -> List[str]:
         movements: List[str] = []
@@ -40,6 +44,3 @@ class SimulationEngine:
 
     def _display_output(self, movements: List[str]) -> None:
         print(" ".join(movements))
-
-    def _render_visuals(self) -> None:
-        pass
