@@ -74,10 +74,12 @@ class Visualizer:
         return types.get(zone_type, "#3498db")
 
     def render_turn(self, movements: List[str]) -> None:
-        for move in movements:
+        updated_drones = set()
 
+        for move in movements:
             parts = move.split('-')
             drone_name = parts[0]
+            updated_drones.add(drone_name)
 
             if len(parts) == 2:
                 target_px = self.zone_coords[parts[1]]
@@ -89,15 +91,14 @@ class Visualizer:
                 r = 8
                 self.drone_markers[drone_name] = self.canvas.create_oval(
                     target_px[0]-r, target_px[1]-r, target_px[0]+r,
-                    target_px[1]+r, fill="yellow", outline="black")
-                self.canvas.create_text(
-                    target_px[0], target_px[1], text=drone_name,
-                    font=("Arial", 6))
+                    target_px[1]+r, fill="yellow",
+                    outline="black", tags="drones")
 
             else:
                 r = 8
                 self.canvas.coords(
                     self.drone_markers[drone_name], target_px[0]-r,
-                    target_px[1]-r, target_px[0]+r, target_px[1] + r)
+                    target_px[1], target_px[0]+r, target_px[1]+r)
 
-        self.root.update()
+        self.canvas.tag_raise("drone")
+        self.root.update
