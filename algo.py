@@ -1,15 +1,16 @@
 import heapq
-from typing import List, Tuple, Set
 from parser import MapConfig
+from typing import List, Set, Tuple
+
+from models import Drone, Path, Zone
 from traffic import ReservationTable
-from models import Zone, Path, Drone
 
 
 class SpaceTime:
     def __init__(self, config: MapConfig, table: ReservationTable) -> None:
         self.config = config
         self.table = table
-        self.turns = 0
+        self._count = 0
 
     def heuristic(self, zone: Zone, goal: Zone) -> float:
         return ((goal.x - zone.x) ** 2 + (goal.y - zone.y) ** 2)**0.5
@@ -25,12 +26,13 @@ class SpaceTime:
             drone.set_path(path_obj)
 
     def _find_path(self, drone_name: str, start: Zone, end: Zone) -> Path:
+        self._count += 1
         start_h = self.heuristic(start, end)
-        pq = [(start_h, 0, start.name, [])]
+        pq = [(start_h, self._count, 0, start.name, [])]
         visited: Set[Tuple[str, int]] = set()
 
         while pq:
-            _, turn, curr_name, history = heapq.heappop(pq)
+            _, count, turn, curr_name, history = heapq.heappop(pq)
 
             if curr_name == end.name:
                 return self._build_path_object(drone_name, end.name, history)
@@ -47,8 +49,10 @@ class SpaceTime:
                 new_f = new_g + self.heuristic(curr_zone, end)
 
                 new_history_wait = history + [(wait_turn, "wait", curr_zone)]
+                self._count += 1
                 heapq.heappush(
-                    pq, (new_f, wait_turn, curr_name, new_history_wait))
+                    pq, (new_f, self._count,
+                         wait_turn, curr_name, new_history_wait))
 
             for connection in self.config.graph[curr_name]:
                 neighbor = (connection.zone_b if connection.zone_a.name ==
@@ -68,11 +72,13 @@ class SpaceTime:
                                     [(arrival_turn, "move_restricted",
                                       (neighbor, connection))])
                     else:
-                        new_move = history = history + \
-                            [(arrival_turn, "move_zone", neighbor)]
+                        new_move = (history +
+                                    [(arrival_turn,
+                                      "move_zone", (neighbor, connection))])
 
                     heapq.heappush(
-                        pq, (new_f, arrival_turn, neighbor.name, new_move))
+                        pq, (new_f, self._count,
+                             arrival_turn, neighbor.name, new_move))
 
         raise ValueError(
             f"No valid Space-Time path found for drone {drone_name}.")
@@ -87,7 +93,9 @@ class SpaceTime:
                 self.table.reserve_zone(zone.name, turn)
 
             elif action == "move_zone":
-                zone = data
+                zone, conn = data
+                self.table.reserve_connection(
+                    conn.zone_a.name, conn.zone_b.name, turn)
                 self.table.reserve_zone(zone.name, turn)
                 path_obj.add_movement(turn, zone)
 

@@ -16,16 +16,19 @@ class SimulationEngine:
 
     def run(self, visualizer: Visualizer) -> None:
         visualizer.draw_map()
+        time.sleep(1.5)
 
-        while not self._all_drones_delivered():
+        while not self._all_drones_delivered() and visualizer.running:
             self.current_turn += 1
             turn_movements = self._execute_turn()
 
             if turn_movements:
                 self._display_output(turn_movements)
                 visualizer.render_turn(turn_movements)
+            else:
+                visualizer.root.update()
 
-            time.sleep(0.9)
+            time.sleep(0.1)
 
     def _execute_turn(self) -> List[str]:
         movements: List[str] = []

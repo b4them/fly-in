@@ -1,5 +1,6 @@
 import sys
 from parser import MapConfig
+
 from algo import SpaceTime
 from engine import SimulationEngine
 from models import Drone
@@ -39,7 +40,8 @@ def main():
     engine.run(viz)
     print("Simulation Finished.")
 
-    viz.root.mainloop()
+    if viz.running:
+        viz.root.mainloop()
 
 
 if __name__ == "__main__":
