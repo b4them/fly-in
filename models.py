@@ -1,9 +1,14 @@
 from typing import Optional, Union
 
+from errors import InvalidCapacityError
+
 
 class Zone:
     def __init__(self, name: str, x: int, y: int, zone_type: str = "normal",
                  color: Optional[str] = None, max_drones: int = 1) -> None:
+        if max_drones < 1:
+            raise InvalidCapacityError(
+                f"Zone '{name}' must have a positive capacity.")
         self.name: str = name
         self.x: int = x
         self.y: int = y

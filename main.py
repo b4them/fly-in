@@ -3,45 +3,61 @@ from parser import MapConfig
 
 from algo import SpaceTime
 from engine import SimulationEngine
+from errors import FlyInError, display_error
 from models import Drone
 from traffic import ReservationTable
 from visualizer import Visualizer
 
 
-def main():
-    if len(sys.argv) == 2:
-        map_path = sys.argv[1]
-    else:
-        raise Exception("Provide a map file!")
+def main() -> None:
+    if len(sys.argv) != 2:
+        display_error("Usage: python3 main.py <map_file>")
+        sys.exit(1)
 
-    config = MapConfig.readfile(map_path)
+    map_path = sys.argv[1]
 
-    if config.start_hub is None or config.end_hub is None:
-        print("Error: Start or End hub not defined in map!")
-        return
-
-    drones = [Drone(i + 1) for i in range(config.nb_drones)]
-
-    table = ReservationTable(config.start_hub.name, config.end_hub.name)
-    solver = SpaceTime(config, table)
-
-    print(f"Planning paths for {config.nb_drones} drones...")
     try:
-        solver.solve(drones)
-    except ValueError as e:
-        print(f"Solver Error: {e}")
-        return
+        config = MapConfig.readfile(map_path)
 
-    viz = Visualizer(config)
-    engine = SimulationEngine(config, table)
-    engine.drones = drones
+        if config.start_hub is None or config.end_hub is None:
+            raise FlyInError(
+                "Map must define exactly one start_hub and end_hub")
 
-    print("Starting Simulation...")
-    engine.run(viz)
-    print("Simulation Finished.")
+        drones = [Drone(i + 1) for i in range(config.nb_drones)]
 
-    if viz.running:
-        viz.root.mainloop()
+        table = ReservationTable(config.start_hub.name, config.end_hub.name)
+        solver = SpaceTime(config, table)
+
+        print(f"Planning paths for {config.nb_drones} drones...")
+        try:
+            solver.solve(drones)
+        except ValueError as e:
+            print(f"Solver Error: {e}")
+            return
+
+        viz = Visualizer(config)
+        engine = SimulationEngine(config, table)
+        engine.drones = drones
+
+        print("Starting Simulation...")
+        engine.run(viz)
+        print("Simulation Finished.")
+
+        if viz.running:
+            viz.root.mainloop()
+
+    except FileNotFoundError:
+        display_error(f"File not found: {map_path}")
+        sys.exit(1)
+    except FlyInError as e:
+        display_error(str(e))
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\nSimulation interrupted by user.")
+        sys.exit(0)
+    except Exception as e:
+        display_error(f"An unexpected system error occured: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

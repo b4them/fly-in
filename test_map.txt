@@ -1,6 +1,0 @@
-nb_drones: 2
-start_hub: hubA 0 0 [color=blue]
-end_hub: hubB 10 10 [color=green]
-hub: hubC 5 5 [zone=restricted,color=red]
-connection: hubA - hubC
-connection: hubC - hubB

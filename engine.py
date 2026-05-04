@@ -2,6 +2,7 @@ import time
 from parser import MapConfig
 from typing import List
 
+from errors import FlyInError
 from models import Drone
 from traffic import ReservationTable
 from visualizer import Visualizer
@@ -15,6 +16,8 @@ class SimulationEngine:
         self.drones: List[Drone] = []
 
     def run(self, visualizer: Visualizer) -> None:
+        if not self.drones:
+            raise FlyInError("Simulation engine received 0 drones. Aborting.")
         visualizer.draw_map()
         time.sleep(1.5)
 

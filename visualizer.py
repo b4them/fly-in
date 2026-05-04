@@ -2,6 +2,8 @@ import tkinter as tk
 from parser import MapConfig
 from typing import Dict, List, Tuple
 
+from errors import FlyInError
+
 
 class Visualizer:
     def __init__(self, config: MapConfig,
@@ -103,6 +105,9 @@ class Visualizer:
         if not self.running:
             return
         targets: Dict[str, Tuple[float, float]] = {}
+
+        if not self.config.zones:
+            raise FlyInError("Visualizer cannot render a map with no zones.")
 
         try:
             if not self.root.winfo_exists():

@@ -1,7 +1,9 @@
 import heapq
+import math
 from parser import MapConfig
-from typing import List, Set, Tuple
+from typing import Any, List, Set, Tuple
 
+from errors import FlyInError, NoPathFoundError
 from models import Drone, Path, Zone
 from traffic import ReservationTable
 
@@ -13,12 +15,15 @@ class SpaceTime:
         self._count = 0
 
     def heuristic(self, zone: Zone, goal: Zone) -> float:
-        return ((goal.x - zone.x) ** 2 + (goal.y - zone.y) ** 2)**0.5
+        return float(math.sqrt(
+            math.pow(goal.x - zone.x, 2) +
+            math.pow(goal.y - zone.y, 2)
+        ))
 
     def solve(self, drones: List[Drone]) -> None:
 
         if self.config.start_hub is None or self.config.end_hub is None:
-            raise ValueError("Start or End hub is not defined in the config.")
+            raise FlyInError("Simulation requires both a start and end hub.")
         for drone in drones:
             path_obj = self._find_path(
                 drone.name, self.config.start_hub, self.config.end_hub)
@@ -28,7 +33,8 @@ class SpaceTime:
     def _find_path(self, drone_name: str, start: Zone, end: Zone) -> Path:
         self._count += 1
         start_h = self.heuristic(start, end)
-        pq = [(start_h, self._count, 0, start.name, [])]
+        pq: List[Tuple[float, int, int, str, List[Any]]] = [
+            (start_h, self._count, 0, start.name, [])]
         visited: Set[Tuple[str, int]] = set()
 
         while pq:
@@ -64,8 +70,10 @@ class SpaceTime:
                 if (self.table.is_connection_available(connection, turn + 1)
                         and
                         self.table.is_zone_available(neighbor, arrival_turn)):
-                    new_g = arrival_turn
-                    new_f = new_g + self.heuristic(neighbor, end)
+
+                    vip_dis = 0.5 if neighbor.zone_type == "priority" else 0.0
+                    new_f = arrival_turn + \
+                        self.heuristic(neighbor, end) - vip_dis
 
                     if step_cost == 2:
                         new_move = (history +
@@ -80,11 +88,12 @@ class SpaceTime:
                         pq, (new_f, self._count,
                              arrival_turn, neighbor.name, new_move))
 
-        raise ValueError(
+        raise NoPathFoundError(
             f"No valid Space-Time path found for drone {drone_name}.")
 
     def _build_path_object(self, drone_name: str,
-                           end: str, history: List[Tuple]) -> Path:
+                           end: str,
+                           history: List[Tuple[int, str, Any]]) -> Path:
         path_obj = Path(drone_name, end)
 
         for turn, action, data in history:

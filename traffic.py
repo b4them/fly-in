@@ -1,5 +1,6 @@
 from typing import Dict, Tuple
 
+from errors import FlyInError
 from models import Connection, Zone
 
 
@@ -29,6 +30,9 @@ class ReservationTable:
         return current_count < conn.max
 
     def reserve_zone(self, zone_name: str, turn: int) -> None:
+        if turn < 0:
+            raise FlyInError(f"Cannot reserve zone '{
+                             zone_name}' for negative turn {turn}")
         key = (zone_name, turn)
         self.zone_occupancy[key] = self.zone_occupancy.get(key, 0) + 1
 
