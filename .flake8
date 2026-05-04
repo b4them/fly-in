@@ -1,0 +1,14 @@
+[flake8]
+# Ignore the virtual environment and metadata
+exclude = 
+    .git,
+    __pycache__,
+    venv,
+    test,
+    .mypy_cache,
+    .pytest_cache
+
+
+# Statistics help during peer-review to show code health
+statistics = True
+count = True
