@@ -144,6 +144,8 @@ class Visualizer:
                 font=("Arial", 6, "bold")
             )
 
+        self.canvas.tag_raise(self.turn_text)
+
         try:
             self.root.lift()
             self.root.update_idletasks()
@@ -247,6 +249,7 @@ class Visualizer:
 
             try:
                 self.canvas.tag_raise("drones")
+                self.canvas.tag_raise(self.turn_text)
                 self.root.update_idletasks()
                 self.root.update()
             except tk.TclError:
@@ -261,7 +264,6 @@ class Visualizer:
             return
 
         try:
-            import time
             while self.paused and self.running:
                 self.root.update()
                 time.sleep(0.1)
