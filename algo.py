@@ -1,7 +1,7 @@
 import heapq
 import math
 from parser import MapConfig
-from typing import Any, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from errors import FlyInError, NoPathFoundError
 from models import Drone, Path, Zone
@@ -13,6 +13,7 @@ class SpaceTime:
         self.config = config
         self.table = table
         self._count = 0
+        self.heatmap: Dict[str, float] = {}
 
     def heuristic(self, zone: Zone, goal: Zone) -> float:
         return float(math.sqrt(
@@ -38,7 +39,7 @@ class SpaceTime:
         visited: Set[Tuple[str, int]] = set()
 
         while pq:
-            _, count, turn, curr_name, history = heapq.heappop(pq)
+            _, _, turn, curr_name, history = heapq.heappop(pq)
 
             if curr_name == end.name:
                 return self._build_path_object(drone_name, end.name, history)
@@ -72,8 +73,11 @@ class SpaceTime:
                         self.table.is_zone_available(neighbor, arrival_turn)):
 
                     vip_dis = 0.5 if neighbor.zone_type == "priority" else 0.0
+
+                    heat = self.heatmap.get(neighbor.name, 0.0)
+
                     new_f = arrival_turn + \
-                        self.heuristic(neighbor, end) - vip_dis
+                        self.heuristic(neighbor, end) - vip_dis + heat
 
                     if step_cost == 2:
                         new_move = (history +
@@ -96,6 +100,7 @@ class SpaceTime:
                            history: List[Tuple[int, str, Any]]) -> Path:
         path_obj = Path(drone_name, end)
 
+        s_name = self.config.start_hub.name if self.config.start_hub else ""
         for turn, action, data in history:
             if action == "wait":
                 zone = data
@@ -108,6 +113,10 @@ class SpaceTime:
                 self.table.reserve_zone(zone.name, turn)
                 path_obj.add_movement(turn, zone)
 
+                if zone.name not in (s_name, end):
+                    self.heatmap[zone.name] = self.heatmap.get(
+                        zone.name, 0.0) + 0.2
+
             elif action == "move_restricted":
                 zone, conn = data
                 connection_turn = turn - 1
@@ -118,5 +127,9 @@ class SpaceTime:
 
                 self.table.reserve_zone(zone.name, turn)
                 path_obj.add_movement(turn, zone)
+
+                if zone.name not in (s_name, end):
+                    self.heatmap[zone.name] = self.heatmap.get(
+                        zone.name, 0.0) + 0.2
 
         return path_obj

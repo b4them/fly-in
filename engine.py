@@ -27,7 +27,7 @@ class SimulationEngine:
 
             if turn_movements:
                 self._display_output(turn_movements)
-                visualizer.render_turn(turn_movements)
+                visualizer.render_turn(turn_movements, self.current_turn)
             else:
                 visualizer.root.update()
 

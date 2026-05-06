@@ -27,6 +27,14 @@ class Visualizer:
 
         self._calculate_scaling()
 
+        self.turn_text = self.canvas.create_text(
+            30, 30,
+            text="Turn: 0",
+            fill="#ecf0f1",
+            font=("Arial", 16, "bold"),
+            anchor="nw"
+        )
+
     def _calculate_scaling(self) -> None:
         """Determines how to map zone coordinates to screen pixels."""
 
@@ -91,6 +99,7 @@ class Visualizer:
                 text=name,
                 fill="#ecf0f1",
                 font=("Arial", 6, "bold"),
+                anchor="nw"
             )
         self.root.lift()
         self.root.update_idletasks()
@@ -101,9 +110,13 @@ class Visualizer:
                  "restricted": "#e74c3c", "blocked": "#95a5a6"}
         return types.get(zone_type, "#3498db")
 
-    def render_turn(self, movements: List[str], steps: int = 20) -> None:
+    def render_turn(self, movements: List[str],
+                    turn: int, steps: int = 20) -> None:
         if not self.running:
             return
+
+        self.canvas.itemconfig(self.turn_text, text=f"Turn: {turn}")
+
         targets: Dict[str, Tuple[float, float]] = {}
 
         if not self.config.zones:
