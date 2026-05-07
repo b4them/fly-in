@@ -56,8 +56,8 @@ class MapConfig:
             raise MapParsingError(
                 line_nb, f"Invalid coordinates: {x_str} {y_str}")
         if name in self.zones:
-            raise DuplicateHubError(f"Line {line_nb}: Zone '{
-                                    name}' already exists")
+            raise DuplicateHubError(
+                f"Line {line_nb}: Zone '{name}' already exists")
 
         max_drones = int(metadata.get('max_drones', 1))
         if max_drones < 1:

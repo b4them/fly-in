@@ -31,8 +31,8 @@ class ReservationTable:
 
     def reserve_zone(self, zone_name: str, turn: int) -> None:
         if turn < 0:
-            raise FlyInError(f"Cannot reserve zone '{
-                             zone_name}' for negative turn {turn}")
+            raise FlyInError(
+                f"Cannot reserve zone '{zone_name}' for negative turn {turn}")
         key = (zone_name, turn)
         self.zone_occupancy[key] = self.zone_occupancy.get(key, 0) + 1
 

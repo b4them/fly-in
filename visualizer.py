@@ -30,14 +30,6 @@ class Visualizer:
         self.zone_coords: Dict[str, Tuple[float, float]] = {}
         self.drone_positions: Dict[str, Tuple[float, float]] = {}
 
-        self.bg_img: Optional[tk.PhotoImage] = None
-        self.drone_img: Optional[tk.PhotoImage] = None
-        self.start_img: Optional[tk.PhotoImage] = None
-        self.goal_img: Optional[tk.PhotoImage] = None
-
-        self._load_images()
-        self._calculate_scaling()
-
         self._calculate_scaling()
 
         self.turn_text = self.canvas.create_text(
@@ -47,28 +39,6 @@ class Visualizer:
             font=("Arial", 16, "bold"),
             anchor="nw"
         )
-
-    def _load_images(self) -> None:
-        """Attempts to load PNG assets. Fails silently to fallback shapes."""
-        try:
-            self.bg_img = tk.PhotoImage(file="assets/bg.png")
-        except tk.TclError:
-            pass
-
-        try:
-            self.drone_img = tk.PhotoImage(file="assets/drone.png")
-        except tk.TclError:
-            pass
-
-        try:
-            self.start_img = tk.PhotoImage(file="assets/start.png")
-        except tk.TclError:
-            pass
-
-        try:
-            self.goal_img = tk.PhotoImage(file="assets/goal.png")
-        except tk.TclError:
-            pass
 
     def toggle_pause(self, event: Any) -> None:
         self.paused = not self.paused
@@ -98,16 +68,11 @@ class Visualizer:
         return px, py
 
     def draw_map(self) -> None:
-
-        if self.bg_img:
-            self.canvas.create_image(self.width / 2,
-                                     self.height / 2, image=self.bg_img
-                                     )
-        for zone_name, connections in self.config.graph.items():
+        for z_n, connections in self.config.graph.items():
             start_px = self._to_pixels(
-                self.config.zones[zone_name].x, self.config.zones[zone_name].y)
+                self.config.zones[z_n].x, self.config.zones[z_n].y)
             for conn in connections:
-                target_zone = (conn.zone_b if conn.zone_a.name == zone_name
+                target_zone = (conn.zone_b if conn.zone_a.name == z_n
                                else conn.zone_a)
                 end_px = self._to_pixels(target_zone.x, target_zone.y)
                 self.canvas.create_line(
@@ -119,28 +84,21 @@ class Visualizer:
 
             offset = 25 if i % 2 == 0 else -25
 
-            if self.config.start_hub and name == self.config.start_hub.name and self.start_img:
-                self.canvas.create_image(px, py, image=self.start_img)
-
-            elif self.config.end_hub and name == self.config.end_hub.name and self.goal_img:
-                self.canvas.create_image(px, py, image=self.goal_img)
-
-            else:
-                color = self._parse_color(
-                    zone.color, self._get_type_color(zone.zone_type))
-                radius = 12
-                try:
-                    self.canvas.create_oval(px-radius, py-radius,
-                                            px+radius, py+radius,
-                                            fill=color, outline="white", width=2)
-                except tk.TclError:
-                    self.canvas.create_oval(px-radius, py-radius,
-                                            px+radius, py+radius,
-                                            fill="gray", outline="white", width=2)
+            color = self._parse_color(
+                zone.color, self._get_type_color(zone.zone_type))
+            radius = 12
+            try:
+                self.canvas.create_oval(px-radius, py-radius,
+                                        px+radius, py+radius,
+                                        fill=color, outline="white", width=2)
+            except tk.TclError:
+                self.canvas.create_oval(px-radius, py-radius,
+                                        px+radius, py+radius,
+                                        fill="gray", outline="white", width=2)
             self.canvas.create_text(
                 px, py + offset,
                 text=name,
-                fill="#2c3e50",
+                fill="#ecf0f1",
                 font=("Arial", 6, "bold")
             )
 
@@ -198,17 +156,11 @@ class Visualizer:
 
                 start_px = self.drone_positions[drone_name]
 
-                if self.drone_img:
-                    self.drone_markers[drone_name] = self.canvas.create_image(
-                        start_px[0], start_px[1],
-                        image=self.drone_img, tags="drones")
-                else:
-
-                    r = 8
-                    self.drone_markers[drone_name] = self.canvas.create_oval(
-                        start_px[0]-r, start_px[1]-r, start_px[0]+r,
-                        start_px[1]+r, fill="yellow",
-                        outline="black", tags="drones")
+                r = 8
+                self.drone_markers[drone_name] = self.canvas.create_oval(
+                    start_px[0]-r, start_px[1]-r, start_px[0]+r,
+                    start_px[1]+r, fill="yellow",
+                    outline="black", tags="drones")
 
                 self.drone_texts[drone_name] = self.canvas.create_text(
                     start_px[0], start_px[1] - 15,
@@ -234,15 +186,10 @@ class Visualizer:
                 curr_y = start_px[1] + \
                     (target_px[1] - start_px[1]) * (s / steps)
 
-                if self.drone_img:
-                    self.canvas.coords(
-                        self.drone_markers[drone_name], curr_x, curr_y)
-
-                else:
-                    r = 8
-                    self.canvas.coords(
-                        self.drone_markers[drone_name], curr_x-r,
-                        curr_y-r, curr_x+r, curr_y+r)
+                r = 8
+                self.canvas.coords(
+                    self.drone_markers[drone_name], curr_x-r,
+                    curr_y-r, curr_x+r, curr_y+r)
 
                 self.canvas.coords(
                     self.drone_texts[drone_name], curr_x, curr_y - 15)
