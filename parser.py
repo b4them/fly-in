@@ -23,7 +23,11 @@ class MapConfig:
     def _parse_drone_count(self, data: str, line_nb: int) -> None:
         if self.nb_drones != 0:
             raise MapParsingError(line_nb, "Duplicate nb_drones definition")
-        if not data.isdigit() or int(data) <= 0:
+
+        if not data.isdigit():
+            raise MapParsingError(
+                line_nb, f"nb_drones must be an interger: {data}")
+        if int(data) <= 0:
             raise MapParsingError(
                 line_nb, f"nb_drones must be positive: {data}")
         self.nb_drones = int(data)
@@ -42,6 +46,10 @@ class MapConfig:
         return data, metadata
 
     def _parse_zone(self, key: str, data: str, line_nb: int) -> None:
+        if self.nb_drones == 0:
+            raise MapParsingError(
+                line_nb, "Format Error: nb_drones must be define before zones")
+
         clean_data, metadata = self._extract_metadata(data)
 
         parts = clean_data.split()
@@ -87,6 +95,9 @@ class MapConfig:
         self.graph[name] = []
 
     def _parse_connection(self, data: str, line_nb: int) -> None:
+        if self.start_hub is None or self.end_hub is None:
+            raise MapParsingError(
+                line_nb, "Map must define exactly one start_hub and end_hub")
         clean_data, metadata = self._extract_metadata(data)
 
         parts = clean_data.split('-')
