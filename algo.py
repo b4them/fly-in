@@ -9,6 +9,17 @@ from traffic import ReservationTable
 
 
 class SpaceTime:
+    """
+  Prioritized Space-Time A* pathfinding algorithm implementation.
+
+  Routes drones sequentially across a network while avoiding collisions
+    using a global Reservation Table and a congestion-aware heatmap.
+
+  Args:
+        config (MapConfig): The parsed configuration of the map.
+        table (ReservationTable): The global occupancy tracker.
+    """
+
     def __init__(self, config: MapConfig, table: ReservationTable) -> None:
         self.config = config
         self.table = table
@@ -22,6 +33,18 @@ class SpaceTime:
         ))
 
     def solve(self, drones: List[Drone]) -> None:
+        """
+      Calculates collision-free paths for all drones in the fleet.
+
+      Iterates through the provided drones and assigns them a calculated
+      Path object. Updates the heatmap and reservation table dynamically.
+
+      Args:
+           drones (List[Drone]): The fleet of drones to route.
+
+      Raises:
+           FlyInError: If the map configuration lacks a start or end hub.
+        """
 
         if self.config.start_hub is None or self.config.end_hub is None:
             raise FlyInError("Simulation requires both a start and end hub.")
@@ -32,6 +55,20 @@ class SpaceTime:
             drone.set_path(path_obj)
 
     def _find_path(self, drone_name: str, start: Zone, end: Zone) -> Path:
+        """
+      Executes the core Space-Time A* search for a single drone.
+
+      Args:
+          drone_name (str): The identifier of the drone being routed.
+          start (Zone): The starting hub.
+          end (Zone): The target destination hub.
+
+      Returns:
+          Path: A fully validated, collision-free schedule for the drone.
+
+      Raises:
+          NoPathFoundError: If no valid physical or temporal path exists.
+        """
         self._count += 1
         start_h = self.heuristic(start, end)
         pq: List[Tuple[float, int, int, str, List[Any]]] = [

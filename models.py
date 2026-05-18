@@ -4,8 +4,26 @@ from errors import InvalidCapacityError
 
 
 class Zone:
+    """
+    Args:
+        name (str): The unique identifier for the zone.
+        x (int): The X coordinate on the grid.
+        y (int): The Y coordinate on the grid.
+        zone_type (str, optional): The classification of the zone
+          (normal, restricted, etc.). Defaults to "normal".
+        color (Optional[str], optional): The visual
+          representation color. Defaults to None.
+        max_drones (int, optional): Maximum capacity
+          of the zone. Defaults to 1.
+
+    Raises:
+        InvalidCapacityError: If max_drones is less than 1.
+
+    """
+
     def __init__(self, name: str, x: int, y: int, zone_type: str = "normal",
                  color: Optional[str] = None, max_drones: int = 1) -> None:
+
         if max_drones < 1:
             raise InvalidCapacityError(
                 f"Zone '{name}' must have a positive capacity.")
@@ -18,6 +36,16 @@ class Zone:
 
 
 class Connection:
+    """
+  Represents a bidirectional traversable path between two zones.
+
+  Args:
+        zone_a (Zone): The first connecting zone.
+        zone_b (Zone): The second connecting zone.
+        max (int, optional): The maximum number of drones
+          that can travel this connection simultaneously. Defaults to 1.
+    """
+
     def __init__(self, zone_a: Zone, zone_b: Zone, max: int = 1) -> None:
         self.zone_a: Zone = zone_a
         self.zone_b: Zone = zone_b
@@ -25,6 +53,14 @@ class Connection:
 
 
 class Path:
+    """
+  Tracks the space-time sequence of movements for a specific drone.
+
+  Args:
+        drone_name (str): The identifier of the drone owning this path.
+        end_name (str): The destination zone name for the drone.
+    """
+
     def __init__(self, drone_name: str, end_name: str) -> None:
         self.drone_name: str = drone_name
         self.end_name: str = end_name
@@ -32,6 +68,14 @@ class Path:
         self.total_turns: int = 0
 
     def add_movement(self, turn: int, target: Union[Zone, Connection]) -> None:
+        """
+      Records a movement or wait action in the drone's schedule.
+
+      Args:
+            turn (int): The simulation turn the movement concludes.
+            target (Union[Zone, Connection]): The zone arriving at,
+              or the connection being traversed.
+        """
         if isinstance(target, Zone):
             name = target.name
         else:
@@ -51,6 +95,13 @@ class Path:
 
 
 class Drone:
+    """
+  Represents an autonomous vehicle navigating the network.
+
+  Args:
+        drone_id (int): The numerical identifier for the drone.
+    """
+
     def __init__(self, drone_id: int) -> None:
         self.id: int = drone_id
         self.name: str = f"D{drone_id}"

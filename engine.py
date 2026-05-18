@@ -9,6 +9,14 @@ from visualizer import Visualizer
 
 
 class SimulationEngine:
+    """
+  Executes the calculated drone paths turn-by-turn.
+
+  Args:
+      config (MapConfig): The parsed configuration of the map.
+      table (ReservationTable): The global occupancy tracker.
+    """
+
     def __init__(self, config: MapConfig, table: ReservationTable) -> None:
         self.config = config
         self.table = table
@@ -16,6 +24,15 @@ class SimulationEngine:
         self.drones: List[Drone] = []
 
     def run(self, visualizer: Visualizer) -> None:
+        """
+      Starts the simulation loop, logging outputs and updating the UI.
+
+      Args:
+          visualizer (Visualizer): The Tkinter GUI handler for rendering.
+
+      Raises:
+          FlyInError: If the engine is initialized with zero drones.
+        """
         if not self.drones:
             raise FlyInError("Simulation engine received 0 drones. Aborting.")
         visualizer.draw_map()
