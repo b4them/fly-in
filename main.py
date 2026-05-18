@@ -21,8 +21,11 @@ def main() -> None:
 
         if config.start_hub is None or config.end_hub is None:
             raise FlyInError(
-                "Map must define exactly one start_hub and end_hub")
+                "Map Error: must define exactly one start_hub and end_hub")
 
+        if not config.is_connected():
+            raise FlyInError(
+                "Map Error: No valid path exists between start and end.")
         drones = [Drone(i + 1) for i in range(config.nb_drones)]
 
         table = ReservationTable(config.start_hub.name, config.end_hub.name)
