@@ -23,6 +23,8 @@ class SimulationEngine:
         self.current_turn = 0
         self.drones: List[Drone] = []
 
+        # self.show_capacity = False
+
     def run(self, visualizer: Visualizer) -> None:
         """
       Starts the simulation loop, logging outputs and updating the UI.
@@ -44,6 +46,8 @@ class SimulationEngine:
 
             if turn_movements:
                 self._display_output(turn_movements)
+                # if self.show_capacity:
+                #     self._print_capacity_info()
                 visualizer.render_turn(turn_movements, self.current_turn)
             else:
                 visualizer.root.update()
@@ -67,3 +71,30 @@ class SimulationEngine:
 
     def _display_output(self, movements: List[str]) -> None:
         print(" ".join(movements))
+
+    # def _print_capacity_info(self) -> None:
+    #     logs = []
+    #
+    #     # 1. Check Zones
+    #     for name, zone in self.config.zones.items():
+    #         used = self.table.zone_occupancy.get((name,
+    # self.current_turn), 0)
+    #         if used > 0:
+    #             logs.append(f"Zone {name}: {used}/{zone.max_drones} drones")
+    #
+    #     # 2. Check Connections
+    #     seen = set()
+    #     for node, connections in self.config.graph.items():
+    #         for conn in connections:
+    #             # Alphabetize pair to match how ReservationTable stores keys
+    #             pair = tuple(sorted((conn.zone_a.name, conn.zone_b.name)))
+    #             if pair not in seen:
+    #                 seen.add(pair)
+    #                 used = self.table.connection_occupancy.get((pair[0],
+    # pair[1], self.current_turn), 0)
+    #                 if used > 0:
+    #                     logs.append(f"Connection {pair[0]}-{pair[1]}:
+    # {used}/{conn.max} capacity used")
+    #
+    #     if logs:
+    #         print("   -> " + ", ".join(logs))

@@ -10,6 +10,10 @@ from visualizer import Visualizer
 
 
 def main() -> None:
+
+    # if capacity_flag:
+    #     sys.argv.remove("--capacity-info")
+
     if len(sys.argv) != 2:
         display_error("Usage: python3 main.py <map_file>")
         sys.exit(1)
@@ -41,6 +45,8 @@ def main() -> None:
         viz = Visualizer(config)
         engine = SimulationEngine(config, table)
         engine.drones = drones
+
+        # engine.show_capacity = capacity_flag
 
         print("Starting Simulation...")
         engine.run(viz)
